@@ -1,2 +1,2 @@
 # Verilog-SPI
-SPI Master using Verilog HDL
+SPI Master Controller using Verilog HDL
