@@ -1,5 +1,5 @@
-# Verilog-SPI#
-##SPI Master and Slave Controller using Verilog HDL##
+# Verilog-SPI #
+## SPI Master and Slave Controller using Verilog HDL ##
 
 1.CPOL & CPHA  
 2.BITORDER  

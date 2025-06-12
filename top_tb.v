@@ -1,3 +1,7 @@
+/*
+	Copyright (C), 2025, LGPL
+	Author: ccapen@github.com
+*/
 module top_tb ();
 
 

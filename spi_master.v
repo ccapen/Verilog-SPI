@@ -1,3 +1,7 @@
+/*
+	Copyright (C), 2025, LGPL
+	Author: ccapen@github.com
+*/
 module spi_master #(
 	parameter	CPOL			= 0,	//SCLK = CPOL when spi is standby
 	parameter	CPHA			= 1,	//when CPHA == 0, sample will occur in the first edge, 

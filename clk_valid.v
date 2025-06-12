@@ -1,4 +1,9 @@
 /*
+	Copyright (C), 2025, LGPL
+	Author: ccapen@github.com
+*/
+
+/*
 	时钟使能方式的时钟分频器
 	1、每隔CLKDIVIDE个时钟发出一个O_valid高电平
 	2、若CLKDIVIDE==1，O_valid保持为高电平
