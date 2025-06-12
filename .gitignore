@@ -1,0 +1,11 @@
+*
+!*/
+!.gitignore
+
+!LICENSE
+!README.md
+!clk_valid.v
+!spi_master.v
+!spi_slave.v
+!top_tb.v
+
