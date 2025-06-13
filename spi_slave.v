@@ -8,10 +8,10 @@ module spi_slave #(
 										//when CPHA == 1, sample will occur in the second edge
 	parameter	BITORDER		= "MSB_FIRST",	//"MSB_FIRST" "LSB_FIRST"
 	parameter	DATAWIDTH		= 8,	//一次传输的数据位宽
-	parameter	DRVMODE			= "NORAML"	//"NORMAL" "ADVANCE"
+	parameter	DRVMODE			= "NORMAL"	//"NORMAL" "ADVANCE"
 											//O_miso always delay I_sclk constant 3 I_clk
 											//when in "ADVANCE", O_miso will be drivered at sample edge
-											//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORAML"
+											//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
 ) (
 	input					I_clk,
 	input					I_rstn,
