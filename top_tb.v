@@ -58,7 +58,8 @@ spi_slave #(
 							//when CPHA == 1, sample will occur in the second edge
 	.BITORDER		("MSB_FIRST"),	//"MSB_FIRST" "LSB_FIRST"
 	.DATAWIDTH		(8),	//一次传输的数据位宽
-	.DRVMODE		("ADVANCE")		//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
+	.DRVMODE		("ADVANCE"),	//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
+	.INTERVAL		(4)		//extend O_wready to wait I_wvalid
 ) spi_slave_u(
 	.I_clk				(R_clk),	//I_clk frequency must higher than (4 * I_sclk frequency)
 	.I_rstn				(R_rstn),

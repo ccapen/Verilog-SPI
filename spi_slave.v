@@ -8,10 +8,13 @@ module spi_slave #(
 										//when CPHA == 1, sample will occur in the second edge
 	parameter	BITORDER		= "MSB_FIRST",	//"MSB_FIRST" "LSB_FIRST"
 	parameter	DATAWIDTH		= 8,	//一次传输的数据位宽
-	parameter	DRVMODE			= "NORMAL"	//"NORMAL" "ADVANCE"
+	parameter	DRVMODE			= "NORMAL",	//"NORMAL" "ADVANCE"
 											//O_miso always delay I_sclk constant 3 I_clk
 											//when in "ADVANCE", O_miso will be drivered at sample edge
 											//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
+	parameter	INTERVAL		= 4		//extend O_wready to wait I_wvalid
+										//it should less than number of I_clk of minimum interval between two contiguous transfer
+										//moreover, when in "NORMAL" mode and (CPHA == 0), it must less than ((frequency of I_clk)/2)/(frequency of I_sclk)
 ) (
 	input					I_clk,
 	input					I_rstn,
@@ -30,6 +33,7 @@ module spi_slave #(
 );
 
 localparam CNTWIDTH = $clog2(DATAWIDTH);
+localparam CNTINTVWIDTH	= $clog2(INTERVAL);
 
 
 reg [2:0] R_csn_d;
@@ -62,7 +66,7 @@ reg [CNTWIDTH-1:0] R_cnt;
 reg [DATAWIDTH-1:0] R_rdata;
 reg [DATAWIDTH:0] R_wdata;
 reg R_rvalid;
-reg R_wready;
+reg [CNTINTVWIDTH-1:0] R_cnt_intv;
 
 always @(posedge I_clk or negedge I_rstn) begin
 	if(!I_rstn)
@@ -89,19 +93,23 @@ always @(posedge I_clk or negedge I_rstn) begin
 	if(!I_rstn)
 		R_wdata <= {(DATAWIDTH+1){1'b0}};
 	else if(I_wvalid && O_wready)
-		R_wdata <= ((BITORDER == "MSB_FIRST") ^ (!((W_transfer_start && CPHA) && (DRVMODE == "NORMAL")))) ? {1'b0, I_wdata} : {I_wdata, 1'b0};
+		R_wdata <= ((BITORDER == "MSB_FIRST") ^ (((!CPHA)) || (DRVMODE != "NORMAL"))) ? {R_wdata[DATAWIDTH], I_wdata} : {I_wdata, R_wdata[0]};
 	else if(W_driver_edge)
 		R_wdata <= (BITORDER == "MSB_FIRST") ? {R_wdata[DATAWIDTH-1:0], 1'b0} : {1'b0, R_wdata[DATAWIDTH:1]};
 	else 
 		R_wdata <= R_wdata;
 	
 	if(!I_rstn)
-		R_wready <= 1'b0;
+		R_cnt_intv <= {CNTINTVWIDTH{1'b0}};
+	else if(I_wvalid)
+		R_cnt_intv <= {CNTINTVWIDTH{1'b0}};
+	else if(W_transfer_start || ((R_cnt == (DATAWIDTH-1)) && W_sample_edge))
+		R_cnt_intv <= (INTERVAL-1);
 	else 
-		R_wready <= (W_transfer_start || ((R_cnt == (DATAWIDTH-1)) && W_driver_edge));
+		R_cnt_intv <= (R_cnt_intv == {CNTINTVWIDTH{1'b0}}) ? {CNTINTVWIDTH{1'b0}} : R_cnt_intv - 1'b1;
 end
 
-assign O_wready = R_wready;
+assign O_wready = (W_transfer_start || ((R_cnt == (DATAWIDTH-1)) && W_sample_edge) || (R_cnt_intv != {CNTINTVWIDTH{1'b0}}));
 assign O_rvalid = R_rvalid;
 assign O_rdata = R_rdata;
 
