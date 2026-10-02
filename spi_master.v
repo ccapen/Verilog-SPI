@@ -14,7 +14,7 @@ module spi_master #(
 	input					I_rstn,
 	
 	input					I_wvalid,
-	input					I_transfer_end,		//share O_wready with I_wvalid, but lower priority
+	input					I_wlast,
 	input	[DATAWIDTH-1:0]	I_wdata,
 	output					O_wready,
 	output	[DATAWIDTH-1:0]	O_rdata,
@@ -29,17 +29,6 @@ module spi_master #(
 localparam CNTWIDTH = $clog2(DATAWIDTH);
 
 
-localparam IDLE		= 4'b0001;
-localparam ENTR		= 4'b0010;
-localparam RXTX		= 4'b0100;
-localparam EXIT		= 4'b1000;
-
-localparam IDLE_IND		= 4'd0;
-localparam ENTR_IND		= 4'd1;
-localparam RXTX_IND		= 4'd2;
-localparam EXIT_IND		= 4'd3;
-
-reg [3:0] R_state;
 wire W_clk_en;
 
 clk_valid #(
@@ -51,6 +40,21 @@ clk_valid #(
 	
 	.O_valid		(W_clk_en)
 );
+
+
+localparam IDLE		= 4'b0001;
+localparam ENTR		= 4'b0010;
+localparam RXTX		= 4'b0100;
+localparam EXIT		= 4'b1000;
+
+localparam IDLE_IND		= 4'd0;
+localparam ENTR_IND		= 4'd1;
+localparam RXTX_IND		= 4'd2;
+localparam EXIT_IND		= 4'd3;
+
+reg [3:0] R_state;
+reg [CNTWIDTH+1:0] R_cnt;
+reg R_wlast;
 
 always@(posedge I_clk or negedge I_rstn)begin
 	if(!I_rstn)
@@ -64,7 +68,7 @@ always@(posedge I_clk or negedge I_rstn)begin
 					R_state <= RXTX;
 				else 
 					R_state <= ENTR;
-		RXTX:	if((!I_wvalid) && I_transfer_end && O_wready)
+		RXTX:	if(R_wlast && ((R_cnt >= (DATAWIDTH*2-1)) && W_clk_en))
 					R_state <= EXIT;
 				else 
 					R_state <= RXTX;
@@ -76,7 +80,6 @@ always@(posedge I_clk or negedge I_rstn)begin
 	endcase
 end
 
-reg [CNTWIDTH+1:0] R_cnt;
 reg [DATAWIDTH:0] R_wdata;
 reg [DATAWIDTH-1:0] R_rdata;
 reg R_rvalid;
@@ -90,6 +93,13 @@ always@(posedge I_clk or negedge I_rstn)begin
 		R_cnt <= R_cnt;
 	else 
 		R_cnt <= R_cnt + 1'b1;
+	
+	if(!I_rstn)
+		R_wlast <= 1'b0;
+	else if(I_wvalid && O_wready)
+		R_wlast <= I_wlast;
+	else 
+		R_wlast <= R_wlast;
 	
 	if(!I_rstn)
 		R_wdata <= {(DATAWIDTH+1){1'b0}};
