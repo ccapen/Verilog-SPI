@@ -33,14 +33,14 @@ spi_master #(
 	.CPHA			(1),	//when CPHA == 0, sample will occur in the first edge, 
 							//when CPHA == 1, sample will occur in the second edge
 	.BITORDER		("MSB_FIRST"),	//"MSB_FIRST" "LSB_FIRST"
-	.DATAWIDTH		(8),	//一次传输的数据位宽
-	.CLKDIV			(8)		//SCLK相对主时钟的分频系数，必须为偶数
+	.DATAWIDTH		(8),	//data width of interface, also bits of once transfer
+	.CLKDIV			(8)		//divide I_clk to generate O_sclk, must be even
 ) spi_master_u(
 	.I_clk				(R_clk),
 	.I_rstn				(R_rstn),
 	
 	.I_wvalid			(R_valid),
-	.I_transfer_end		(1'b1),		//share O_wready with I_wvalid, but lower priority
+	.I_wlast			(1'b1),		//enable to pullup O_csn after this data
 	.I_wdata			(8'hb5),
 	.O_wready			(),
 	.O_rdata			(),
@@ -57,14 +57,13 @@ spi_slave #(
 	.CPHA			(1),	//when CPHA == 0, sample will occur in the first edge, 
 							//when CPHA == 1, sample will occur in the second edge
 	.BITORDER		("MSB_FIRST"),	//"MSB_FIRST" "LSB_FIRST"
-	.DATAWIDTH		(8),	//一次传输的数据位宽
-	.DRVMODE		("ADVANCE"),	//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
-	.INTERVAL		(4)		//extend O_wready to wait I_wvalid
+	.DATAWIDTH		(8),	//data width of interface, also bits of once transfer
+	.ODRVMODE		("ADVANCE"),	//when I_clk frequency lower than (12 * I_sclk frequency), use "ADVANCE"; else use "NORMAL"
+	.WDATADELAY		(4)		//extend O_wready to wait I_wvalid
 ) spi_slave_u(
 	.I_clk				(R_clk),	//I_clk frequency must higher than (4 * I_sclk frequency)
 	.I_rstn				(R_rstn),
 
-	.I_wvalid			(1'b1),
 	.I_wdata			(8'h5a),
 	.O_wready			(),
 	.O_rvalid			(),
