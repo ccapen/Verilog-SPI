@@ -7,9 +7,9 @@
 Are configurable for both master and slave controller, while  
 CLKDIV  
 is configurable for master controller to decide the frequency of `O_sclk`, and  
-1.DRVMODE  
-2.INTERVAL  
+1.ODRVMODE  
+2.WDATADELAY  
 is configurable for slave controller to  
-1.fit different `I_clk` and `I_sclk` frequency combination  
-2.extend `O_wready` to wait `I_wvalid` that can return data according to the last byte.  
+1.fit different `I_clk` and `I_sclk` frequency rate  
+2.delay `O_wready` to wait `I_wdata` that can return data according to the last byte.  
   
